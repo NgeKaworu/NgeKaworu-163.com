@@ -135,6 +135,6 @@ func TestMapliztion(test *testing.T) {
 	}
 
 	log.Printf("%+v\n", mm)
-	test.Logf("%+v\n", mm)
+	test.Log(mm)
 
 }
