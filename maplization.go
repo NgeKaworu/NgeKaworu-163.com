@@ -78,10 +78,16 @@ func (m *Maplization) structHandler(v reflect.Value) (map[string]interface{}, er
 			continue
 		}
 
+		ele, err := m.Conver(m.safeInterface(cur))
+
+		if err != nil {
+			return nil, err
+		}
+
 		if formatter, ok := t.Field(i).Tag.Lookup("formatter"); ok {
-			o[tagsName], err = m.Formatters[formatter](m.safeInterface(cur))
+			o[tagsName], err = m.Formatters[formatter](ele)
 		} else {
-			o[tagsName], err = m.Conver(m.safeInterface(cur))
+			o[tagsName], err = m.Conver(ele)
 		}
 
 	}
