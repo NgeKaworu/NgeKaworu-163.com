@@ -4,71 +4,132 @@ import (
 	"log"
 	"testing"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Test struct
 type Test struct {
-	ID             *string                     `bson:"id,omitempty" oid:"true"`             //用户id
-	Name           *string                     `bson:"name,omitempty"`                      //活动名
-	Describe       *string                     `bson:"describe,omitempty"`                  //描述
-	Barbolas       *[]*string                  `bson:"barbolas,omitempty"`                  //图片描述
-	PublisherRole  string                      `bson:"publisher_role,omitempty" oid:"true"` //发布接龙角色ID
-	HeadImg        *string                     `bson:"head_img,omitempty"`                  //头图
-	PrivacyType    *string                     `bson:"privacy_type,omitempty"`              //传播隐私类型
-	BizStartDate   string                      `bson:"biz_start_date,omitempty"`            //活动开始时间 2019-02-02 18:00:00
-	BizEndData     string                      `bson:"biz_end_data,omitempty"`              //活动结束时间
-	SignState      string                      `bson:"sign_state,omitempty"`                //签到状态
-	PrivacyVisable *string                     `bson:"privacy_visable,omitempty"`           //参与者可见状态
-	CanComment     *string                     `bson:"can_comment,omitempty"`               //是否可以留言
-	BizType        *string                     `bson:"biz_type,omitempty"`                  //业务类型
-	BizStatus      *string                     `bson:"biz_status,omitempty"`                //业务状态
-	TestArr        []interface{}               `bson:"test_arr,omitempty"`                  //测试数组
-	TestMap        map[interface{}]interface{} `bson:"test_map,omitempty"`                  //测试map
-	TestNumber     int32                       `bson:"test_number,omitempty"`               //测试数字
-	TestTime       time.Time                   `bson:"test_time,omitempty"`                 //测试Time
-
+	ID        *string                 `bson:"id,omitempty" formatter:"oid"`
+	String    string                  `bson:"string,omitzero"`
+	Arr       []interface{}           `bson:"arr,omitzero"`
+	ArrZero   []interface{}           `bson:"arr_zero,omitzero"`
+	ArrPtr    *[]interface{}          `bson:"arr_ptr,omitempty"`
+	ArrPtrNil *[]interface{}          `bson:"arr_ptr_nil,omitempty"`
+	Map       map[string]interface{}  `bson:"map,omitzero"`
+	MapZero   map[string]interface{}  `bson:"map_zero,omitzero"`
+	MapPtr    *map[string]interface{} `bson:"map_ptr,omitempty"`
+	MapPtrNil *map[string]interface{} `bson:"map_ptr_nil,omitempty"`
+	I32       int32                   `bson:"i32,omitzero"`
+	I32Ptr    *int32                  `bson:"i32_ptr,omitempty"`
+	F32       float32                 `bson:"f32,omitzero"`
+	F32Ptr    *float32                `bson:"f32_ptr,omitempty"`
+	Time      time.Time               `bson:"time,omitzero" formatter:"now"`
+	TimePtr   *time.Time              `bson:"time_ptr,omitempty" formatter:"now"`
+	Struct    *Test                   `bson:"struct,omitempty"`
+	StructNil *Test                   `bson:"struct_nil,omitempty"`
+	OmitZero  string                  `bson:"omit_zero"`
+	OmitEmpty *string                 `bson:"omit_empty"`
 }
 
 // mapliztion test
 func TestMapliztion(test *testing.T) {
-
-	mm := map[string]Formatter{
-		"t1": func(i interface{}) (interface{}, error) {
-			log.Println(i)
-			return i, nil
+	formatter := map[string]Formatter{
+		"now": func(i interface{}) (interface{}, error) {
+			return time.Now().Local(), nil
+		},
+		"oid": func(i interface{}) (interface{}, error) {
+			return primitive.ObjectIDFromHex(i.(string))
 		},
 	}
 
-	mapper := NewMapper(mm)
+	mapper := NewMapper(formatter)
 
-	s := "String"
-	sa := []*string{&s}
+	var str string = "5e73018c324cecdcfda7bcac"
+	var id *string = &str
+	var arrZero []interface{}
+	var arrPtrNil *[]interface{}
+	var mapZero map[string]interface{}
+	var mapPtrNil *map[string]interface{}
+	var i32 int32 = 32
+	var i32Ptr *int32 = &i32
+	var f32 float32 = 32.0
+	var f32Ptr *float32 = &f32
+	var t time.Time = time.Now()
+	var timePtr *time.Time = &t
+	var structNil *Test
+	var omitZero string
+	var omitEmpty *string
 
-	t := &Test{
-		Name:           &s,
-		Describe:       &s,
-		Barbolas:       &sa,
-		PublisherRole:  "5e73018c324cecdcfda7bcac",
-		HeadImg:        &s,
-		PrivacyType:    &s,
-		BizStartDate:   "String",
-		BizEndData:     "String",
-		SignState:      "关闭",
-		PrivacyVisable: &s,
-		CanComment:     &s,
-		BizType:        &s,
-		BizStatus:      &s,
-		TestArr:        []interface{}{1, "a"},
-		TestMap:        map[interface{}]interface{}{"a": "a", 0: 1},
-		TestTime:       time.Now(),
+	var s *Test
+	arr := []interface{}{
+		str,
+		id,
+		arrZero,
+		arrPtrNil,
+		mapZero,
+		mapPtrNil,
+		i32,
+		i32Ptr,
+		f32,
+		f32Ptr,
+		t,
+		timePtr,
+		structNil,
+		omitZero,
+		omitEmpty,
+	}
+	var arrPtr *[]interface{} = &arr
+	m := map[string]interface{}{
+		"str,":       str,
+		"id,":        id,
+		"arrZero,":   arrZero,
+		"arrPtrNil,": arrPtrNil,
+		"mapZero,":   mapZero,
+		"mapPtrNil,": mapPtrNil,
+		"i32,":       i32,
+		"i32Ptr,":    i32Ptr,
+		"f32,":       f32,
+		"f32Ptr,":    f32Ptr,
+		"t,":         t,
+		"timePtr,":   timePtr,
+		"structNil,": structNil,
+		"omitZero,":  omitZero,
+		"omitEmpty,": omitEmpty,
+	}
+	var mapPtr *map[string]interface{} = &m
+
+	tt := &Test{
+		ID:        id,
+		String:    str,
+		Arr:       arr,
+		ArrZero:   arrZero,
+		ArrPtr:    arrPtr,
+		ArrPtrNil: arrPtrNil,
+		Map:       m,
+		MapZero:   mapZero,
+		MapPtr:    mapPtr,
+		MapPtrNil: mapPtrNil,
+		I32:       i32,
+		I32Ptr:    i32Ptr,
+		F32:       f32,
+		F32Ptr:    f32Ptr,
+		Time:      t,
+		TimePtr:   timePtr,
+		Struct:    s,
+		StructNil: structNil,
+		OmitZero:  omitZero,
+		OmitEmpty: omitEmpty,
 	}
 
-	m, err := mapper.Conver(t)
+	mm, err := mapper.Conver(tt)
+	mm["set"] = "set"
 
 	if err != nil {
 		test.Log(err)
 	}
 
-	test.Logf("%+v\n", m)
+	log.Printf("%+v\n", mm)
+	test.Logf("%+v\n", mm)
 
 }

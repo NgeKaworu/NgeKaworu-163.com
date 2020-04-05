@@ -20,10 +20,11 @@ func NewMapper(m map[string]Formatter) *Maplization {
 	}
 }
 
-// Conver 2 map
-func (m *Maplization) Conver(i interface{}) (interface{}, error) {
+// Conver conver 2 map[string]interface{}
+func (m *Maplization) Conver(i interface{}) (map[string]interface{}, error) {
 	v := reflect.ValueOf(i)
-	return m.dispather(v)
+	o, err := m.dispather(v)
+	return o.(map[string]interface{}), err
 }
 
 func (m *Maplization) dispather(v reflect.Value) (interface{}, error) {
@@ -44,13 +45,16 @@ func (m *Maplization) dispather(v reflect.Value) (interface{}, error) {
 	}
 }
 
-func (m *Maplization) structHandler(v reflect.Value) (o map[string]interface{}, err error) {
+func (m *Maplization) structHandler(v reflect.Value) (map[string]interface{}, error) {
 	t := v.Type()
+	o := make(map[string]interface{})
+	var err error
+
 	for i := 0; i < t.NumField(); i++ {
-		var canEmpty, skip bool
+		var omitempty, skip, omitzero bool
 
 		tagsName := t.Field(i).Name
-		curElem := v.Field(i)
+		cur := v.Field(i)
 
 		if tags, ok := t.Field(i).Tag.Lookup("bson"); ok {
 			tagsArr := strings.Split(tags, ",")
@@ -58,21 +62,23 @@ func (m *Maplization) structHandler(v reflect.Value) (o map[string]interface{}, 
 			for _, v := range tagsArr {
 				switch v {
 				case "omitempty":
-					canEmpty = true
+					omitempty = true
+				case "omitzero":
+					omitzero = true
 				case "-":
 					skip = true
 				}
 			}
 		}
 
-		if skip || (curElem.IsNil() && canEmpty) {
+		if skip || (cur.Kind() == reflect.Ptr && cur.IsNil() && omitempty) || (cur.IsZero() && omitzero) {
 			continue
 		}
 
 		if formatter, ok := t.Field(i).Tag.Lookup("formatter"); ok {
-			o[tagsName], err = m.Formatters[formatter](curElem.Interface())
+			o[tagsName], err = m.Formatters[formatter](cur.Interface())
 		} else {
-			o[tagsName], err = m.dispather(curElem)
+			o[tagsName], err = m.dispather(cur)
 		}
 
 	}
@@ -80,15 +86,22 @@ func (m *Maplization) structHandler(v reflect.Value) (o map[string]interface{}, 
 	return o, err
 }
 
-func (m *Maplization) mapHandler(v reflect.Value) (o map[string]interface{}, err error) {
+func (m *Maplization) mapHandler(v reflect.Value) (map[string]interface{}, error) {
+	var err error
+	o := make(map[string]interface{})
+
 	for _, idx := range v.MapKeys() {
-		o[idx.Interface().(string)], err = m.dispather(v.MapIndex(idx))
+		o[idx.String()], err = m.dispather(v.MapIndex(idx))
 	}
 	return o, err
 }
 
-func (m *Maplization) sliceHandler(v reflect.Value) (o []interface{}, err error) {
-	for i := 0; i < v.Len(); i++ {
+func (m *Maplization) sliceHandler(v reflect.Value) ([]interface{}, error) {
+	var err error
+	l := v.Len()
+	o := make([]interface{}, l)
+
+	for i := 0; i < l; i++ {
 		o[i], err = m.dispather(v.Index(i))
 	}
 	return o, err
