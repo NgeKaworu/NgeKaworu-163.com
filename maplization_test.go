@@ -4,13 +4,11 @@ import (
 	"log"
 	"testing"
 	"time"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Test struct
 type Test struct {
-	ID        *string                 `bson:"id,omitempty" formatter:"oid"`
+	ID        *string                 `bson:"id,omitempty"`
 	String    string                  `bson:"string,omitzero"`
 	Arr       []interface{}           `bson:"arr,omitzero"`
 	ArrZero   []interface{}           `bson:"arr_zero,omitzero"`
@@ -37,9 +35,6 @@ func TestMapliztion(test *testing.T) {
 	formatter := map[string]Formatter{
 		"now": func(i interface{}) (interface{}, error) {
 			return time.Now().Local(), nil
-		},
-		"oid": func(i interface{}) (interface{}, error) {
-			return primitive.ObjectIDFromHex(*i.(*string))
 		},
 	}
 
