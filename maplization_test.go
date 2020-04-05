@@ -39,7 +39,7 @@ func TestMapliztion(test *testing.T) {
 			return time.Now().Local(), nil
 		},
 		"oid": func(i interface{}) (interface{}, error) {
-			return primitive.ObjectIDFromHex(i.(string))
+			return primitive.ObjectIDFromHex(*i.(*string))
 		},
 	}
 
@@ -61,7 +61,10 @@ func TestMapliztion(test *testing.T) {
 	var omitZero string
 	var omitEmpty *string
 
-	var s *Test
+	subStr := &Test{
+		String: "subStr",
+	}
+
 	arr := []interface{}{
 		str,
 		id,
@@ -75,6 +78,7 @@ func TestMapliztion(test *testing.T) {
 		f32Ptr,
 		t,
 		timePtr,
+		subStr,
 		structNil,
 		omitZero,
 		omitEmpty,
@@ -93,6 +97,7 @@ func TestMapliztion(test *testing.T) {
 		"f32Ptr,":    f32Ptr,
 		"t,":         t,
 		"timePtr,":   timePtr,
+		"subStr":     subStr,
 		"structNil,": structNil,
 		"omitZero,":  omitZero,
 		"omitEmpty,": omitEmpty,
@@ -116,13 +121,13 @@ func TestMapliztion(test *testing.T) {
 		F32Ptr:    f32Ptr,
 		Time:      t,
 		TimePtr:   timePtr,
-		Struct:    s,
+		Struct:    subStr,
 		StructNil: structNil,
-		OmitZero:  omitZero,
-		OmitEmpty: omitEmpty,
+		// OmitZero:  omitZero,
+		// OmitEmpty: omitEmpty,
 	}
 
-	mm, err := mapper.Conver(tt)
+	mm, err := mapper.Conver2Map(tt)
 	mm["set"] = "set"
 
 	if err != nil {

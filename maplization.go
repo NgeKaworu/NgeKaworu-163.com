@@ -20,11 +20,17 @@ func NewMapper(m map[string]Formatter) *Maplization {
 	}
 }
 
-// Conver conver 2 map[string]interface{}
-func (m *Maplization) Conver(i interface{}) (map[string]interface{}, error) {
+// Conver2Map map[string]interface{}'s sugar
+func (m *Maplization) Conver2Map(i interface{}) (map[string]interface{}, error) {
 	v := reflect.ValueOf(i)
 	o, err := m.dispather(v)
 	return o.(map[string]interface{}), err
+}
+
+// Conver conver 2 map[string]interface{}
+func (m *Maplization) Conver(i interface{}) (interface{}, error) {
+	v := reflect.ValueOf(i)
+	return m.dispather(v)
 }
 
 func (m *Maplization) dispather(v reflect.Value) (interface{}, error) {
@@ -38,10 +44,7 @@ func (m *Maplization) dispather(v reflect.Value) (interface{}, error) {
 	case reflect.Ptr:
 		return m.ptrHandler(v)
 	default:
-		if v.CanInterface() {
-			return v.Interface(), nil
-		}
-		return v, nil
+		return m.safeInterface(v), nil
 	}
 }
 
@@ -76,9 +79,9 @@ func (m *Maplization) structHandler(v reflect.Value) (map[string]interface{}, er
 		}
 
 		if formatter, ok := t.Field(i).Tag.Lookup("formatter"); ok {
-			o[tagsName], err = m.Formatters[formatter](cur.Interface())
+			o[tagsName], err = m.Formatters[formatter](m.safeInterface(cur))
 		} else {
-			o[tagsName], err = m.dispather(cur)
+			o[tagsName], err = m.Conver(m.safeInterface(cur))
 		}
 
 	}
@@ -91,7 +94,7 @@ func (m *Maplization) mapHandler(v reflect.Value) (map[string]interface{}, error
 	o := make(map[string]interface{})
 
 	for _, idx := range v.MapKeys() {
-		o[idx.String()], err = m.dispather(v.MapIndex(idx))
+		o[idx.String()], err = m.Conver(m.safeInterface(v.MapIndex(idx)))
 	}
 	return o, err
 }
@@ -102,7 +105,7 @@ func (m *Maplization) sliceHandler(v reflect.Value) ([]interface{}, error) {
 	o := make([]interface{}, l)
 
 	for i := 0; i < l; i++ {
-		o[i], err = m.dispather(v.Index(i))
+		o[i], err = m.Conver(m.safeInterface(v.Index(i)))
 	}
 	return o, err
 }
@@ -111,5 +114,12 @@ func (m *Maplization) ptrHandler(v reflect.Value) (interface{}, error) {
 	if v.IsNil() {
 		return nil, nil
 	}
-	return m.dispather(v.Elem())
+	return m.Conver(m.safeInterface(v.Elem()))
+}
+
+func (m *Maplization) safeInterface(v reflect.Value) interface{} {
+	if v.IsValid() && v.CanInterface() {
+		return v.Interface()
+	}
+	return nil
 }
