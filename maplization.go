@@ -117,10 +117,7 @@ func (m *Maplization) sliceHandler(v reflect.Value) ([]interface{}, error) {
 }
 
 func (m *Maplization) ptrHandler(v reflect.Value) (interface{}, error) {
-	if v.IsNil() {
-		return nil, nil
-	}
-	return m.Conver(m.safeInterface(v.Elem()))
+	return m.Conver(m.safeInterface(reflect.Indirect(v)))
 }
 
 func (m *Maplization) safeInterface(v reflect.Value) interface{} {
