@@ -43,6 +43,8 @@ func (m *Maplization) dispather(v reflect.Value) (interface{}, error) {
 		return m.sliceHandler(v)
 	case reflect.Ptr:
 		return m.ptrHandler(v)
+	case reflect.Invalid:
+		return nil, nil
 	default:
 		return m.safeInterface(v), nil
 	}

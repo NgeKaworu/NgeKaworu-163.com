@@ -8,26 +8,27 @@ import (
 
 // Test struct
 type Test struct {
-	ID        *string                 `bson:"id,omitempty"`
-	String    string                  `bson:"string,omitzero"`
-	Arr       []interface{}           `bson:"arr,omitzero"`
-	ArrZero   []interface{}           `bson:"arr_zero,omitzero"`
-	ArrPtr    *[]interface{}          `bson:"arr_ptr,omitempty"`
-	ArrPtrNil *[]interface{}          `bson:"arr_ptr_nil,omitempty"`
-	Map       map[string]interface{}  `bson:"map,omitzero"`
-	MapZero   map[string]interface{}  `bson:"map_zero,omitzero"`
-	MapPtr    *map[string]interface{} `bson:"map_ptr,omitempty"`
-	MapPtrNil *map[string]interface{} `bson:"map_ptr_nil,omitempty"`
-	I32       int32                   `bson:"i32,omitzero"`
-	I32Ptr    *int32                  `bson:"i32_ptr,omitempty"`
-	F32       float32                 `bson:"f32,omitzero"`
-	F32Ptr    *float32                `bson:"f32_ptr,omitempty"`
-	Time      time.Time               `bson:"time,omitzero" formatter:"now"`
-	TimePtr   *time.Time              `bson:"time_ptr,omitempty" formatter:"now"`
-	Struct    *Test                   `bson:"struct,omitempty"`
-	StructNil *Test                   `bson:"struct_nil,omitempty"`
-	OmitZero  string                  `bson:"omit_zero"`
-	OmitEmpty *string                 `bson:"omit_empty"`
+	ID           *string                 `bson:"id,omitempty"`
+	String       string                  `bson:"string,omitzero"`
+	Arr          []interface{}           `bson:"arr,omitzero"`
+	ArrZero      []interface{}           `bson:"arr_zero,omitzero"`
+	ArrPtr       *[]interface{}          `bson:"arr_ptr,omitempty"`
+	ArrPtrNil    *[]interface{}          `bson:"arr_ptr_nil,omitempty"`
+	Map          map[string]interface{}  `bson:"map,omitzero"`
+	MapZero      map[string]interface{}  `bson:"map_zero,omitzero"`
+	MapPtr       *map[string]interface{} `bson:"map_ptr,omitempty"`
+	MapPtrNil    *map[string]interface{} `bson:"map_ptr_nil,omitempty"`
+	I32          int32                   `bson:"i32,omitzero"`
+	I32Ptr       *int32                  `bson:"i32_ptr,omitempty"`
+	F32          float32                 `bson:"f32,omitzero"`
+	F32Ptr       *float32                `bson:"f32_ptr,omitempty"`
+	Time         time.Time               `bson:"time,omitzero" formatter:"now"`
+	TimePtr      *time.Time              `bson:"time_ptr,omitempty" formatter:"now"`
+	Struct       *Test                   `bson:"struct,omitempty"`
+	StructNil    *Test                   `bson:"struct_nil,omitempty"`
+	OmitZero     string                  `bson:"omit_zero"`
+	OmitEmpty    *string                 `bson:"omit_empty"`
+	InterfacePtr *interface{}            `bson:"interface_ptr,omitempty"`
 }
 
 // mapliztion test
@@ -55,6 +56,8 @@ func TestMapliztion(test *testing.T) {
 	var structNil *Test
 	var omitZero string
 	var omitEmpty *string
+	var it interface{}
+	var interfacePtr *interface{} = &it
 
 	subStr := &Test{
 		String: "subStr",
@@ -120,6 +123,7 @@ func TestMapliztion(test *testing.T) {
 		StructNil: structNil,
 		// OmitZero:  omitZero,
 		// OmitEmpty: omitEmpty,
+		InterfacePtr: interfacePtr,
 	}
 
 	mm, err := mapper.Conver2Map(tt)
